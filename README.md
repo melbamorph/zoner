@@ -42,6 +42,8 @@ Update `.env.local` with the variables that match your setup.
 - `NEXT_PUBLIC_CHATKIT_WORKFLOW_ID` — the workflow you created in [Agent Builder](https://platform.openai.com/agent-builder)
 - (optional) `CHATKIT_API_BASE` - customizable base URL for the ChatKit API endpoint
 
+> Note: if your workflow is using a model requiring organization verification, such as GPT-5, make sure you verify your organization first. Visit your [organization settings](https://platform.openai.com/settings/organization/general) and click on "Verify Organization".
+
 ### 4. Run the app
 
 ```bash
