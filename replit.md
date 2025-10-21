@@ -10,6 +10,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### October 21, 2025 - Zoning District Lookup API Endpoint
+- Added new POST endpoint `/api/lookup_zoning_district` for ArcGIS FeatureServer integration
+- Implements geospatial query with lat/lon coordinates to identify zoning districts
+- Includes robust validation (type checking, NaN validation, coordinate range validation)
+- Uses proper WGS84 spatial reference (EPSG:4326) for accurate geospatial queries
+- Returns structured JSON responses for found/not found/error cases
+
 ### October 13, 2025 - Vercel to Replit Migration
 - Migrated project from Vercel to Replit environment
 - Updated Next.js dev and start scripts to bind to port 5000 and host 0.0.0.0 for Replit compatibility
@@ -80,6 +87,24 @@ Preferred communication style: Simple, everyday language.
 3. Server resolves or creates user ID
 4. Server makes authenticated request to OpenAI API
 5. Server sets session cookie and returns session data
+
+**Zoning District Lookup Endpoint (`/api/lookup_zoning_district`)**
+- **Problem**: Need to query geospatial data from ArcGIS FeatureServer for zoning information
+- **Solution**: Next.js API route that accepts lat/lon coordinates and queries ArcGIS REST API
+- **Rationale**: Server-side querying provides consistent interface and error handling
+
+**Request/Response Format**
+- Request: `{ "lat": number, "lon": number }`
+- Success (found): `{ "found": true, "district": string, "attributes": object }`
+- Success (not found): `{ "found": false }`
+- Error: `{ "error": string }` with appropriate HTTP status code
+
+**Validation & Security**
+- Type validation for lat/lon parameters
+- Coordinate range validation (lat: -90 to 90, lon: -180 to 180)
+- JSON parsing error handling with 400 status codes
+- Sanitized error messages that don't leak internal details
+- Proper spatial reference (EPSG:4326/WGS84) for accurate geospatial queries
 
 ### Configuration Management
 
