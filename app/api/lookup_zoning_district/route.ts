@@ -14,13 +14,23 @@ interface ArcGISResponse {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  let body: unknown;
+  
   try {
-    const body = await request.json();
+    body = await request.json();
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Invalid JSON body" },
+      { status: 400 }
+    );
+  }
+
+  try {
     const { lat, lon } = body as Partial<LookupZoningRequest>;
 
     if (typeof lat !== "number" || typeof lon !== "number") {
       return NextResponse.json(
-        { error: "Both lat and lon must be numbers" },
+        { error: "Both lat and lon must be valid numbers" },
         { status: 400 }
       );
     }
@@ -32,22 +42,37 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
+    if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+      return NextResponse.json(
+        { error: "Latitude must be between -90 and 90, longitude must be between -180 and 180" },
+        { status: 400 }
+      );
+    }
+
     const arcgisUrl = new URL(
       "https://services8.arcgis.com/IS3r9gAO1V8yuCqO/ArcGIS/rest/services/OpenGov_Map_Service_WFL1/FeatureServer/0/query"
     );
 
-    arcgisUrl.searchParams.set("geometry", `${lon},${lat}`);
+    const geometryParam = JSON.stringify({
+      x: lon,
+      y: lat,
+      spatialReference: { wkid: 4326 }
+    });
+
+    arcgisUrl.searchParams.set("geometry", geometryParam);
     arcgisUrl.searchParams.set("geometryType", "esriGeometryPoint");
+    arcgisUrl.searchParams.set("inSR", "4326");
     arcgisUrl.searchParams.set("spatialRel", "esriSpatialRelIntersects");
     arcgisUrl.searchParams.set("outFields", "*");
     arcgisUrl.searchParams.set("returnGeometry", "false");
+    arcgisUrl.searchParams.set("where", "1=1");
     arcgisUrl.searchParams.set("f", "json");
 
     const response = await fetch(arcgisUrl.toString());
 
     if (!response.ok) {
       return NextResponse.json(
-        { error: `ArcGIS service returned status ${response.status}` },
+        { error: "ArcGIS service error" },
         { status: 500 }
       );
     }
@@ -73,8 +98,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       });
     }
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error occurred";
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
