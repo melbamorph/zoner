@@ -281,6 +281,27 @@ export function ChatKitPanel({
     threadItemActions: {
       feedback: false,
     },
+    widgets: {
+      async onAction(
+        action: { type: string; payload?: Record<string, unknown> },
+        widgetItem
+      ) {
+        if (action.type !== "agent.address.submit") return;
+
+        const payload = action.payload ?? {};
+        const raw = payload.address;
+
+        const address =
+          typeof raw === "string" ? raw.trim() : "";
+
+        if (!address) {
+          console.log("Address widget submitted with empty value");
+          return;
+        }
+
+        console.log("Address from widget:", address);
+      },
+    },
     onClientTool: async (invocation: {
       name: string;
       params: Record<string, unknown>;
