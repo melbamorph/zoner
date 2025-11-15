@@ -1,0 +1,97 @@
+Update the components/ChatKitPanel.tsx file so that ChatKit handles my custom widget action.
+
+Context:
+
+This is a Next.js / TypeScript project using @openai/chatkit-react.
+
+ChatKitPanel.tsx already calls useChatKit({ ... }) and passes the returned control into the <ChatKit /> component.
+
+I have a widget built in Agent Builder that uses onSubmitAction={{ type: "agent.address.submit" }} and the form input is named "address".
+
+Change I want:
+
+Inside the existing useChatKit({ ... }) call in ChatKitPanel.tsx, add a widgets option with an onAction handler.
+
+The handler should:
+
+Match only actions where action.type === "agent.address.submit".
+
+Safely read action.payload.address (it should be a string).
+
+Trim the value and ignore the action if the address is missing or empty.
+
+For now, just log the extracted address with console.log("Address from widget:", address);.
+
+Implementation details:
+
+Use the official WidgetsOption signature:
+onAction: async (action: { type: string; payload?: Record<string, unknown> }, widgetItem) => Promise<void>
+
+Do not change any of the existing options (api, theme, startScreen, composer, threadItemActions, onClientTool, etc.).
+
+Only add the new widgets block directly alongside the other options in the useChatKit call.
+
+The useChatKit call should end up looking conceptually like this (adjust imports or types if needed, but keep the rest of the file as-is):
+
+const chatkit = useChatKit({
+  api: { getClientSecret },
+  theme: {
+    colorScheme: theme,
+    ...getThemeConfig(theme),
+  },
+  startScreen: {
+    greeting: GREETING,
+    prompts: STARTER_PROMPTS,
+  },
+  composer: {
+    placeholder: PLACEHOLDER_INPUT,
+    attachments: {
+      enabled: true,
+    },
+  },
+  threadItemActions: {
+    feedback: false,
+  },
+  widgets: {
+    async onAction(
+      action: { type: string; payload?: Record<string, unknown> },
+      widgetItem
+    ) {
+      if (action.type !== "agent.address.submit") return;
+
+      const payload = action.payload ?? {};
+      const raw = payload.address;
+
+      const address =
+        typeof raw === "string" ? raw.trim() : "";
+
+      if (!address) {
+        console.log("Address widget submitted with empty value");
+        return;
+      }
+
+      console.log("Address from widget:", address);
+    },
+  },
+  onClientTool: async (invocation: {
+    name: string;
+    params: Record<string, unknown>;
+  }) => {
+    // existing logic…
+  },
+  onResponseEnd: () => {
+    onResponseEnd();
+  },
+  onResponseStart: () => {
+    setErrorState({ integration: null, retryable: false });
+  },
+  onThreadChange: () => {
+    processedFacts.current.clear();
+  },
+  onError: ({ error }: { error: unknown }) => {
+    console.error("ChatKit error", error);
+  },
+});
+
+
+Please make these edits and ensure the file compiles without TypeScript errors.
