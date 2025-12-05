@@ -1,3 +1,4 @@
+> **Disclaimer**: Zoner is an experimental project and does not represent an official product of the City of Lebanon. Content may change as part of ongoing research and prototyping.
 # Zoner Playbook
 
 ## Introduction
