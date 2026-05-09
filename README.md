@@ -1,80 +1,82 @@
-## Zoning Ordinance Navigator
+# Zoner
 
-Disclaimer: This is an experimental personal project. It is not an official tool of the City of Lebanon, NH, nor is it endorsed by any city agency. The assistant’s responses may contain errors or omissions. Always refer to the actual zoning ordinance or city officials for authoritative information.
+Zoner is an experimental, public-facing zoning assistant for Lebanon, New Hampshire. This repository contains the ChatKit and Next.js application that hosts the chatbot experience and creates ChatKit sessions for an OpenAI Agent Builder workflow.
 
-### Project Purpose and Background
+Zoner is not an official tool of the City of Lebanon, NH, and it does not make official zoning determinations. Answers may be incomplete, outdated, or wrong. Final zoning determinations must come from authorized City staff, and the official City zoning ordinance remains the legal source of truth.
 
-Intended to be an experimental chat-based AI assistant designed to answer questions about the City of Lebanon’s zoning ordinance in plain English. The goal is to help residents, developers, or anyone interested to get quick, easy-to-understand answers about zoning rules (e.g. “Can I build an accessory dwelling in a residential zone?”). This project was inspired by the complexity of zoning regulations and the idea of leveraging AI to make them more accessible.
+## What This Repo Owns
 
-**What This Is:**  An experimental project to learn how to use OpenAI Agent Builder by building a web-based chatbot that knows about Lebanon’s zoning codes and can assist with common questions. It’s built for learning and demonstration purposes using OpenAI’s ChatKit framework. 
+- The user-facing ChatKit web app.
+- Server-side ChatKit session creation with `OPENAI_API_KEY`.
+- The workflow ID setting that connects the app to the Agent Builder workflow.
+- User-facing copy, disclaimers, and links to supporting project documentation.
+- A direct zoning district lookup API route that should be reviewed later against the separate MCP service.
 
-**This is NOT an official city service.** 
+For the broader system map, see [docs/PROJECT_MAP.md](docs/PROJECT_MAP.md). For deployment notes, see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
- This project is a personal experiment exploring how AI can serve civic tech. The answers it gives are not legally binding or guaranteed correct. It is meant to be a helpful guide rather than a final authority.
+## Sources Of Authority
 
-### Setup and Installation
+- The official City of Lebanon zoning ordinance PDF and authorized City staff are authoritative.
+- The `3DMcD/ZoningOrdinance` GitHub Pages site is a beta presentation layer for easier reading and future citation links.
+- Zoner responses are assistance only. They are not legal advice, not a permit approval, and not an official zoning determination.
+- GIS, address, parcel, and zoning layer results may help orient a question, but they should be checked against official sources before anyone relies on them.
 
-To set up this project, follow the installation instructions from the [OpenAI ChatKit Starter Template](https://github.com/openai/openai-chatkit-starter-app) and the official OpenAI documentation for [Agents](https://platform.openai.com/docs/guides/agents) and [ChatKit](https://platform.openai.com/docs/guides/chatkit). Once you’ve completed the starter setup, update your `.env.local` file with your OpenAI API key and workflow ID as follows:
+## Related Project Pieces
 
-* `OPENAI_API_KEY` – Your OpenAI API key (enables access to AI services)
-* `NEXT_PUBLIC_CHATKIT_WORKFLOW_ID` – The ID of your custom Agent Builder workflow configured with Lebanon zoning information
+- `melbamorph/zoner`: this ChatKit and Next.js app.
+- `melbamorph/zonerMCP`: the MCP server for Lebanon zoning and GIS lookup.
+- `3DMcD/ZoningOrdinance`: the beta Jekyll ordinance site.
+- OpenAI Agent Builder: the source of truth for the agent workflow, including routing, guardrails, file search, MCP calls, response behavior, traces, and evals.
+- Replit: current hosting/deployment environment for some parts of the experience.
 
-Then run the development server:
+These pieces should stay separate for now. They have different responsibilities and can be maintained independently without forcing the whole project into one repository.
+
+## Local Setup
+
+Install dependencies:
+
+```bash
+npm ci
+```
+
+Create a local environment file:
+
+```bash
+cp .env.example .env.local
+```
+
+Set the required values in `.env.local`:
+
+- `OPENAI_API_KEY`: server-side OpenAI API key. Do not expose this in client code, commit it, or paste it into documentation.
+- `NEXT_PUBLIC_CHATKIT_WORKFLOW_ID`: the Agent Builder workflow ID for the environment you are testing. This is not an API secret, but it is still environment-specific configuration.
+
+Start the development server:
 
 ```bash
 npm run dev
 ```
 
-The app will launch at [http://localhost:3000](http://localhost:3000). You can type zoning questions into the chat interface to test functionality.
+The app is configured for Replit-compatible local serving on port `5000`, so the development URL is usually `http://localhost:5000`.
 
-### Usage Tips
+## Safety Rules For Maintainers
 
-**Asking Questions:** Try to ask clear, specific questions about zoning rules or definitions. The assistant can handle questions like “What uses are allowed in the Industrial zone?” or “How tall can a fence be in a residential area?” 
+- Do not hardcode OpenAI API keys, MCP bearer tokens, ArcGIS base URLs, Replit secrets, or other private deployment values.
+- Keep OpenAI API keys server-side only.
+- Do not remove or weaken the unofficial-project disclaimer.
+- Do not describe Zoner as an official City service, an official zoning determination tool, or a replacement for staff review.
+- When a question may affect a permit, property use, enforcement, or legal rights, direct users to verify with official sources or authorized City staff.
 
-The agent will determine if your question is zoning related and then ask clarifying questions if needed before searching the zoning ordinance and returning a response. 
+## Development Checks
 
-**Please note:** This is a work in progress so you should expect to see malformed answers, inconsistencies, and unexpected behavior. 
+Run the standard checks before opening a pull request:
 
-**Understanding Answers:** The AI will answer in everyday language and may reference sections of the ordinance. These answers are generated by a model and may occasionally be inaccurate or imprecise. Always double-check with the official ordinance if the question is important.
+```bash
+npm run lint
+npm run build
+```
 
-**Resetting or Refreshing:** If the conversation goes off track or you want to start over, refresh the page or start a new chat. The assistant doesn’t retain memory between sessions, so each reload starts fresh.
+This repository does not own the Jekyll ordinance build. Changes to `3DMcD/ZoningOrdinance` should be tested in that repository with `bundle exec jekyll build`.
 
-### Attribution and Credits
+## Attribution
 
-This project was bootstrapped with the **OpenAI ChatKit Starter Template**. The ChatKit framework provides the chat UI and connects to an AI agent built with OpenAI’s Agent Builder. All original template code and assets are used under the MIT License (see the LICENSE file). 
-
-The original template can be found on GitHub at [openai/openai-chatkit-starter-app](https://github.com/openai/openai-chatkit-starter-app).
-
-**Zoning Data:** The assistant’s knowledge is based on publicly available zoning ordinance documents from the City of Lebanon, NH. No confidential or proprietary information was used. You can view the official zoning ordinance on the [City of Lebanon website](https://lebanonnh.gov/zoningordinance). 
-
-### Limitations and Future Plans
-
-**Known Limitations:**
-
-* **Formatting Issues:** Occasionally, the assistant may produce malformed outputs such as partial JSON code or other unexpected formatting artifacts, especially when explaining structured data.
-
-* **Accuracy:** The assistant may occasionally give outdated or misunderstood information. Verify important answers with official sources.
-
-* **Scope:** It’s limited to Lebanon’s zoning code. Questions outside this scope may get generic or incorrect responses.
-
-* **Technical Quirks:** Since it’s built on a new OpenAI platform (ChatKit + Agent workflows), expect occasional bugs or glitches.
-
-* **Not Official:** This is a personal demo, not an official city service.
-
-**Future Improvements:**
-
-* **Enhanced Data Updates:** Automate ordinance updates as changes occur and explore integration of GIS data layers (e.g., zoning maps and parcel information) to provide spatial context within answers.
-* **Guided Next Steps:** Offer clear, non-legal recommendations after an answer, such as where to apply for a zoning permit, how to request a Zoning Board of Adjustment variance or special exception, and who to contact in Planning and Development. When possible, include checklists, required documents, and links to forms.
-* **Better Error Handling:** Improve responses for unclear or unsupported questions.
-* **User Interface Tweaks:** Add branding and a short introduction that reminds users the tool is unofficial, while refining the overall design for better usability and visual appeal.  
-* **Improved Citation Handling:** Add more complete citations that link to specific ordinance sections and GIS map layers for greater transparency and usability.
-
-### License
-
-This project includes code from the OpenAI ChatKit Starter Template and retains its original **MIT License**. You may use, modify, and distribute this project in accordance with that license. See the LICENSE file for details.
-
-### Disclaimer
-
-The Zoning Ordinance Navigator is shared in the spirit of learning, collaboration, and civic innovation. As an experimental project, it may change, go offline, or break from time to time.
-
-This is an experimental personal project. It is not an official tool of the City of Lebanon, NH, nor is it endorsed by any city agency. The assistant’s responses may contain errors or omissions. Always refer to the actual zoning ordinance or city officials for authoritative information.
+This project was originally bootstrapped from the OpenAI ChatKit starter template and retains the starter template license terms where applicable. See [LICENSE](LICENSE).
