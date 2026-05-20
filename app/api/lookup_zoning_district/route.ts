@@ -9,8 +9,15 @@ interface ArcGISFeature {
   attributes: Record<string, unknown>;
 }
 
+interface ArcGISError {
+  code?: number;
+  message?: string;
+  details?: unknown;
+}
+
 interface ArcGISResponse {
   features?: ArcGISFeature[];
+  error?: ArcGISError;
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -26,6 +33,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
+    if (body === null || typeof body !== "object" || Array.isArray(body)) {
+      return NextResponse.json(
+        { error: "Request body must be a JSON object" },
+        { status: 400 }
+      );
+    }
+
     const { lat, lon } = body as Partial<LookupZoningRequest>;
 
     if (typeof lat !== "number" || typeof lon !== "number") {
@@ -73,11 +87,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!response.ok) {
       return NextResponse.json(
         { error: "ArcGIS service error" },
-        { status: 500 }
+        { status: 502 }
       );
     }
 
     const data = (await response.json()) as ArcGISResponse;
+
+    if (data.error) {
+      console.error("ArcGIS returned an error response", data.error);
+      return NextResponse.json(
+        { error: "ArcGIS service error" },
+        { status: 502 }
+      );
+    }
 
     if (data.features && data.features.length > 0) {
       const feature = data.features[0];

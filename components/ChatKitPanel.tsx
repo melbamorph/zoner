@@ -295,11 +295,15 @@ export function ChatKitPanel({
           typeof raw === "string" ? raw.trim() : "";
 
         if (!address) {
-          console.log("Address widget submitted with empty value");
+          if (isDev) {
+            console.log("Address widget submitted with empty value");
+          }
           return;
         }
 
-        console.log("Address from widget:", address);
+        if (isDev) {
+          console.log("Address from widget:", address);
+        }
       },
     },
     onClientTool: async (invocation: {
